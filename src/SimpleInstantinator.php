@@ -19,11 +19,12 @@ final class SimpleInstantinator implements Instantinator
             $object = $this->newInstance($refClass, $data);
 
             foreach ($data as $key => $value) {
-                $refClass->getProperty($key)->setValue($object, $value);
+                $refProp = $refClass->getProperty($key);
+                $refProp->setValue($object, $this->prepareValue($refProp->getType(), $value));
             }
 
             return $object;
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             throw new HydratorException($e->getMessage(), (int) $e->getCode(), $e);
         }
     }
@@ -37,6 +38,7 @@ final class SimpleInstantinator implements Instantinator
      * @return T
      *
      * @throws \ReflectionException
+     * @throws \Throwable
      */
     private function newInstance(\ReflectionClass $refClass, array &$data): object
     {
@@ -54,7 +56,7 @@ final class SimpleInstantinator implements Instantinator
 
         foreach ($constructor->getParameters() as $parameter) {
             if (\array_key_exists($parameter->name, $data)) {
-                $constructorArgs[$parameter->name] = $data[$parameter->name];
+                $constructorArgs[$parameter->name] = $this->prepareValue($parameter->getType(), $data[$parameter->name]);
                 unset($data[$parameter->name]);
             } elseif (false === $parameter->isOptional()) {
                 throw new \RuntimeException(\sprintf('Required constructor parameter "%s" of class %s is not defined.', $parameter->name, $refClass->name));
@@ -62,5 +64,32 @@ final class SimpleInstantinator implements Instantinator
         }
 
         return $refClass->newInstanceArgs($constructorArgs);
+    }
+
+    /**
+     * @throws \Throwable
+     */
+    private function prepareValue(?\ReflectionType $type, mixed $value): mixed
+    {
+        if (
+            $type instanceof \ReflectionNamedType
+            && is_a($type->getName(), \BackedEnum::class, true)
+        ) {
+            /** @var class-string<\BackedEnum> $enum */
+            $enum = $type->getName();
+
+            try {
+                /** @psalm-suppress MixedArgument */
+                return $enum::from($value);
+            } catch (\Throwable $e) {
+                if ($type->allowsNull()) {
+                    return null;
+                }
+
+                throw $e;
+            }
+        }
+
+        return $value;
     }
 }
