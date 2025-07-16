@@ -22,7 +22,7 @@ final class Hydrator
     /**
      * @throws Exception
      */
-    public function createByConnection(
+    public static function createByConnection(
         Connection $connection,
         Instantinator $instantinator = new SimpleInstantinator(),
     ): self {
