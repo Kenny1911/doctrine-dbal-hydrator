@@ -5,11 +5,16 @@ declare(strict_types=1);
 namespace Kenny1911\DoctrineDbalHydrator\Tests;
 
 use Doctrine\DBAL\Platforms\SQLitePlatform;
+use Doctrine\DBAL\Types\Types;
 use Kenny1911\DoctrineDbalHydrator\Hydrator;
+use Kenny1911\DoctrineDbalHydrator\HydratorException;
 use Kenny1911\DoctrineDbalHydrator\Tests\DtoClass\DtoConstructor;
 use Kenny1911\DoctrineDbalHydrator\Tests\DtoClass\DtoConstructorAndProperties;
 use Kenny1911\DoctrineDbalHydrator\Tests\DtoClass\DtoConstructorPromotedProperties;
+use Kenny1911\DoctrineDbalHydrator\Tests\DtoClass\DtoEnumProperties;
+use Kenny1911\DoctrineDbalHydrator\Tests\DtoClass\DtoEnumPropertiesEnum;
 use Kenny1911\DoctrineDbalHydrator\Tests\DtoClass\DtoOnlyProperties;
+use Kenny1911\DoctrineDbalHydrator\Type\EnumType;
 use PHPUnit\Framework\Attributes\TestWith;
 use PHPUnit\Framework\TestCase;
 
@@ -112,5 +117,113 @@ final class HydratorTest extends TestCase
         self::assertInstanceOf(DtoOnlyProperties::class, $object);
         self::assertSame($expectedFoo, $object->foo);
         self::assertSame($expectedBar, $object->bar);
+    }
+
+    /**
+     * @param array<non-empty-string, mixed> $data
+     */
+    #[TestWith([
+        DtoEnumPropertiesEnum::FOO,
+        DtoEnumPropertiesEnum::BAR,
+        DtoEnumPropertiesEnum::BAZ,
+        DtoEnumPropertiesEnum::QUX,
+        ['constructorArg' => 'foo', 'constructorArgNullable' => 'bar', 'property' => 'baz', 'propertyNullable' => 'qux'],
+    ])]
+    #[TestWith([
+        DtoEnumPropertiesEnum::FOO,
+        null,
+        DtoEnumPropertiesEnum::BAZ,
+        null,
+        ['constructorArg' => 'foo', 'constructorArgNullable' => null, 'property' => 'baz', 'propertyNullable' => null],
+    ])]
+    public function testHydrateDtoEnumProperty(
+        DtoEnumPropertiesEnum $expectedConstructorArg,
+        ?DtoEnumPropertiesEnum $expectedConstructorArgNullable,
+        DtoEnumPropertiesEnum $expectedProperty,
+        ?DtoEnumPropertiesEnum $expectedPropertyNullable,
+        array $data,
+    ): void {
+        $object = $this->hydrator->hydrate(
+            DtoEnumProperties::class,
+            $data,
+            [
+                'constructorArg' => new EnumType(DtoEnumPropertiesEnum::class, Types::STRING),
+                'constructorArgNullable' => new EnumType(DtoEnumPropertiesEnum::class, Types::STRING),
+                'property' => new EnumType(DtoEnumPropertiesEnum::class, Types::STRING),
+                'propertyNullable' => new EnumType(DtoEnumPropertiesEnum::class, Types::STRING),
+            ],
+        );
+
+        self::assertInstanceOf(DtoEnumProperties::class, $object);
+        self::assertSame($expectedConstructorArg, $object->constructorArg);
+        self::assertSame($expectedConstructorArgNullable, $object->constructorArgNullable);
+        self::assertSame($expectedProperty, $object->property);
+        self::assertSame($expectedPropertyNullable, $object->propertyNullable);
+    }
+
+    /**
+     * @param array<non-empty-string, mixed> $data
+     *
+     * @throws \Throwable
+     */
+    #[TestWith([['constructorArg' => 1, 'constructorArgNullable' => 'bar', 'property' => 'baz', 'propertyNullable' => 'qux']])]
+    #[TestWith([['constructorArg' => 'foo', 'constructorArgNullable' => 1, 'property' => 'baz', 'propertyNullable' => 'qux']])]
+    #[TestWith([['constructorArg' => 'foo', 'constructorArgNullable' => 'bar', 'property' => 1, 'propertyNullable' => 'qux']])]
+    #[TestWith([['constructorArg' => 'foo', 'constructorArgNullable' => 'bar', 'property' => 'baz', 'propertyNullable' => 1]])]
+    #[TestWith([['constructorArg' => null, 'constructorArgNullable' => 'bar', 'property' => 'baz', 'propertyNullable' => 'qux']])]
+    #[TestWith([['constructorArg' => 'foo', 'constructorArgNullable' => 'bar', 'property' => null, 'propertyNullable' => 'qux']])]
+    public function testHydrateDtoEnumPropertyInvalidEnumTypeError(
+        array $data,
+    ): void {
+        self::expectException(HydratorException::class);
+
+        try {
+            $this->hydrator->hydrate(
+                DtoEnumProperties::class,
+                $data,
+                [
+                    'constructorArg' => new EnumType(DtoEnumPropertiesEnum::class, Types::STRING),
+                    'constructorArgNullable' => new EnumType(DtoEnumPropertiesEnum::class, Types::STRING),
+                    'property' => new EnumType(DtoEnumPropertiesEnum::class, Types::STRING),
+                    'propertyNullable' => new EnumType(DtoEnumPropertiesEnum::class, Types::STRING),
+                ],
+            );
+        } catch (\Throwable $e) {
+            self::assertInstanceOf(\TypeError::class, $e->getPrevious());
+
+            throw $e;
+        }
+    }
+
+    /**
+     * @param array<non-empty-string, mixed> $data
+     *
+     * @throws \Throwable
+     */
+    #[TestWith([['constructorArg' => 'invalid', 'constructorArgNullable' => 'bar', 'property' => 'baz', 'propertyNullable' => 'qux']])]
+    #[TestWith([['constructorArg' => 'foo', 'constructorArgNullable' => 'invalid', 'property' => 'baz', 'propertyNullable' => 'qux']])]
+    #[TestWith([['constructorArg' => 'foo', 'constructorArgNullable' => 'bar', 'property' => 'invalid', 'propertyNullable' => 'qux']])]
+    #[TestWith([['constructorArg' => 'foo', 'constructorArgNullable' => 'bar', 'property' => 'naz', 'propertyNullable' => 'invalid']])]
+    public function testHydrateDtoEnumPropertyValueError(
+        array $data,
+    ): void {
+        self::expectException(HydratorException::class);
+
+        try {
+            $this->hydrator->hydrate(
+                DtoEnumProperties::class,
+                $data,
+                [
+                    'constructorArg' => new EnumType(DtoEnumPropertiesEnum::class, Types::STRING),
+                    'constructorArgNullable' => new EnumType(DtoEnumPropertiesEnum::class, Types::STRING),
+                    'property' => new EnumType(DtoEnumPropertiesEnum::class, Types::STRING),
+                    'propertyNullable' => new EnumType(DtoEnumPropertiesEnum::class, Types::STRING),
+                ],
+            );
+        } catch (\Throwable $e) {
+            self::assertInstanceOf(\ValueError::class, $e->getPrevious());
+
+            throw $e;
+        }
     }
 }

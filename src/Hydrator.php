@@ -8,6 +8,7 @@ use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Types\Type;
+use Kenny1911\DoctrineDbalHydrator\Type\EnumType;
 
 /**
  * @api
@@ -37,7 +38,7 @@ final class Hydrator
      *
      * @param class-string<T> $class
      * @param array<non-empty-string, mixed> $data
-     * @param array<non-empty-string, non-empty-string> $types
+     * @param array<non-empty-string, non-empty-string|EnumType> $types
      *
      * @return T
      *
@@ -51,15 +52,24 @@ final class Hydrator
             $convertedData = [];
 
             foreach ($data as $key => $value) {
-                if (isset($types[$key])) {
-                    $convertedData[$key] = Type::getType($types[$key])->convertToPHPValue($value, $platform);
+                $type = $types[$key] ?? null;
+
+                if (null === $value) {
+                    $convertedData[$key] = null;
+                } elseif ($type instanceof EnumType) {
+                    /** @psalm-suppress MixedArgument */
+                    $convertedData[$key] = $type->enum::from(Type::getType($type->type)->convertToPHPValue($value, $platform));
+                } elseif (\is_string($type)) {
+                    $convertedData[$key] = Type::getType($type)->convertToPHPValue($value, $platform);
                 } else {
                     $convertedData[$key] = $value;
                 }
             }
 
             return $this->instantinator->instantiate($class, $convertedData);
-        } catch (\Exception|Exception $e) {
+        } catch (HydratorException $e) {
+            throw $e;
+        } catch (\Throwable $e) {
             throw new HydratorException($e->getMessage(), (int) $e->getCode(), $e);
         }
     }
