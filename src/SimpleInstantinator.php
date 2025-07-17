@@ -23,7 +23,7 @@ final class SimpleInstantinator implements Instantinator
             }
 
             return $object;
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             throw new HydratorException($e->getMessage(), (int) $e->getCode(), $e);
         }
     }
