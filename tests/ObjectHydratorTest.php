@@ -6,8 +6,8 @@ namespace Kenny1911\DoctrineDbalHydrator\Tests;
 
 use Doctrine\DBAL\Platforms\SQLitePlatform;
 use Doctrine\DBAL\Types\Types;
-use Kenny1911\DoctrineDbalHydrator\Hydrator;
 use Kenny1911\DoctrineDbalHydrator\HydratorException;
+use Kenny1911\DoctrineDbalHydrator\ObjectHydrator;
 use Kenny1911\DoctrineDbalHydrator\Tests\DtoClass\DtoConstructor;
 use Kenny1911\DoctrineDbalHydrator\Tests\DtoClass\DtoConstructorAndProperties;
 use Kenny1911\DoctrineDbalHydrator\Tests\DtoClass\DtoConstructorPromotedProperties;
@@ -22,14 +22,14 @@ use PHPUnit\Framework\TestCase;
  * @internal
  * @psalm-internal Kenny1911\DoctrineDbalHydrator\Tests
  */
-final class HydratorTest extends TestCase
+final class ObjectHydratorTest extends TestCase
 {
-    private Hydrator $hydrator;
+    private ObjectHydrator $hydrator;
 
     #[\Override]
     protected function setUp(): void
     {
-        $this->hydrator = new Hydrator(new SQLitePlatform());
+        $this->hydrator = new ObjectHydrator(new SQLitePlatform());
     }
 
     /**

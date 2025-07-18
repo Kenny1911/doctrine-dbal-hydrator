@@ -13,7 +13,7 @@ use Kenny1911\DoctrineDbalHydrator\Type\EnumType;
 /**
  * @api
  */
-final class Hydrator
+final class ObjectHydrator
 {
     public function __construct(
         private readonly AbstractPlatform $platform,
