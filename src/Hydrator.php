@@ -38,13 +38,14 @@ final class Hydrator
      *
      * @param class-string<T> $class
      * @param array<non-empty-string, mixed> $data
-     * @param array<non-empty-string, non-empty-string|EnumType> $types
+     * @param array<non-empty-string, non-empty-string|EnumType> $types Map keys of $class property to doctrine type
+     * @param array<non-empty-string, non-empty-string> $mapping Map keys of $data to properties of $class
      *
      * @return T
      *
      * @throws HydratorException
      */
-    public function hydrate(string $class, array $data, array $types = []): object
+    public function hydrate(string $class, array $data, array $types = [], array $mapping = []): object
     {
         try {
             $platform = $this->platform;
@@ -52,17 +53,18 @@ final class Hydrator
             $convertedData = [];
 
             foreach ($data as $key => $value) {
-                $type = $types[$key] ?? null;
+                $name = $mapping[$key] ?? $key;
+                $type = $types[$name] ?? null;
 
                 if (null === $value) {
-                    $convertedData[$key] = null;
+                    $convertedData[$name] = null;
                 } elseif ($type instanceof EnumType) {
                     /** @psalm-suppress MixedArgument */
-                    $convertedData[$key] = $type->enum::from(Type::getType($type->type)->convertToPHPValue($value, $platform));
+                    $convertedData[$name] = $type->enum::from(Type::getType($type->type)->convertToPHPValue($value, $platform));
                 } elseif (\is_string($type)) {
-                    $convertedData[$key] = Type::getType($type)->convertToPHPValue($value, $platform);
+                    $convertedData[$name] = Type::getType($type)->convertToPHPValue($value, $platform);
                 } else {
-                    $convertedData[$key] = $value;
+                    $convertedData[$name] = $value;
                 }
             }
 

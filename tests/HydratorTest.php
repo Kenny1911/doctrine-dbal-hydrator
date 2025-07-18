@@ -35,14 +35,16 @@ final class HydratorTest extends TestCase
     /**
      * @param array<non-empty-string, mixed> $data
      * @param array<non-empty-string, non-empty-string> $types
+     * @param array<non-empty-string, non-empty-string> $mapping
      */
-    #[TestWith(['Foo', 0, ['foo' => 'Foo'], []])]
-    #[TestWith(['Foo', 123, ['foo' => 'Foo', 'bar' => 123], []])]
-    #[TestWith(['Foo', 123, ['foo' => 'Foo', 'bar' => '123'], ['bar' => 'integer']])]
-    #[TestWith(['Foo', 123, ['foo' => 'Foo', 'bar' => '123'], ['foo' => 'text', 'bar' => 'integer']])]
-    public function testHydrateDtoConstructor(string $expectedFoo, int $expectedBar, array $data, array $types): void
+    #[TestWith(['Foo', 0, ['foo' => 'Foo'], [], []])]
+    #[TestWith(['Foo', 123, ['foo' => 'Foo', 'bar' => 123], [], []])]
+    #[TestWith(['Foo', 123, ['foo' => 'Foo', 'bar' => '123'], ['bar' => 'integer'], []])]
+    #[TestWith(['Foo', 123, ['foo' => 'Foo', 'bar' => '123'], ['foo' => 'text', 'bar' => 'integer'], []])]
+    #[TestWith(['Foo', 123, ['foo_column' => 'Foo', 'bar_column' => '123'], ['foo' => 'text', 'bar' => 'integer'], ['foo_column' => 'foo', 'bar_column' => 'bar']])]
+    public function testHydrateDtoConstructor(string $expectedFoo, int $expectedBar, array $data, array $types, array $mapping): void
     {
-        $object = $this->hydrator->hydrate(DtoConstructor::class, $data, $types);
+        $object = $this->hydrator->hydrate(DtoConstructor::class, $data, $types, $mapping);
 
         self::assertInstanceOf(DtoConstructor::class, $object);
         self::assertSame($expectedFoo, $object->foo);
@@ -52,6 +54,7 @@ final class HydratorTest extends TestCase
     /**
      * @param array<non-empty-string, mixed> $data
      * @param array<non-empty-string, non-empty-string> $types
+     * @param array<non-empty-string, non-empty-string> $mapping
      */
     #[TestWith([
         'Foo',
@@ -59,16 +62,26 @@ final class HydratorTest extends TestCase
         new \DateTimeImmutable('2025-01-01 00:00:00'),
         ['foo' => 'Foo', 'bar' => 123, 'baz' => new \DateTimeImmutable('2025-01-01 00:00:00')],
         ['baz' => 'datetime_immutable'],
+        [],
     ])]
-    #[TestWith(['Foo', 0, null, ['foo' => 'Foo'], []])]
+    #[TestWith(['Foo', 0, null, ['foo' => 'Foo'], [], []])]
+    #[TestWith([
+        'Foo',
+        123,
+        new \DateTimeImmutable('2025-01-01 00:00:00'),
+        ['foo_column' => 'Foo', 'bar_column' => 123, 'baz_column' => new \DateTimeImmutable('2025-01-01 00:00:00')],
+        ['baz' => 'datetime_immutable'],
+        ['foo_column' => 'foo', 'bar_column' => 'bar', 'baz_column' => 'baz'],
+    ])]
     public function testHydrateDtoConstructorAndProperties(
         string $expectedFoo,
         int $expectedBar,
         ?\DateTimeImmutable $expectedBaz,
         array $data,
         array $types,
+        array $mapping,
     ): void {
-        $object = $this->hydrator->hydrate(DtoConstructorAndProperties::class, $data, $types);
+        $object = $this->hydrator->hydrate(DtoConstructorAndProperties::class, $data, $types, $mapping);
 
         self::assertInstanceOf(DtoConstructorAndProperties::class, $object);
         self::assertSame($expectedFoo, $object->foo);
@@ -79,18 +92,21 @@ final class HydratorTest extends TestCase
     /**
      * @param array<non-empty-string, mixed> $data
      * @param array<non-empty-string, non-empty-string> $types
+     * @param array<non-empty-string, non-empty-string> $mapping
      */
-    #[TestWith(['Foo', 0, ['foo' => 'Foo'], []])]
-    #[TestWith(['Foo', 123, ['foo' => 'Foo', 'bar' => 123], []])]
-    #[TestWith(['Foo', 123, ['foo' => 'Foo', 'bar' => '123'], ['bar' => 'integer']])]
-    #[TestWith(['Foo', 123, ['foo' => 'Foo', 'bar' => '123'], ['foo' => 'text', 'bar' => 'integer']])]
+    #[TestWith(['Foo', 0, ['foo' => 'Foo'], [], []])]
+    #[TestWith(['Foo', 123, ['foo' => 'Foo', 'bar' => 123], [], []])]
+    #[TestWith(['Foo', 123, ['foo' => 'Foo', 'bar' => '123'], ['bar' => 'integer'], []])]
+    #[TestWith(['Foo', 123, ['foo' => 'Foo', 'bar' => '123'], ['foo' => 'text', 'bar' => 'integer'], []])]
+    #[TestWith(['Foo', 123, ['foo_column' => 'Foo', 'bar_column' => '123'], ['foo' => 'text', 'bar' => 'integer'], ['foo_column' => 'foo', 'bar_column' => 'bar']])]
     public function testHydrateDtoConstructorPromotedProperties(
         string $expectedFoo,
         int $expectedBar,
         array $data,
         array $types,
+        array $mapping,
     ): void {
-        $object = $this->hydrator->hydrate(DtoConstructorPromotedProperties::class, $data, $types);
+        $object = $this->hydrator->hydrate(DtoConstructorPromotedProperties::class, $data, $types, $mapping);
 
         self::assertInstanceOf(DtoConstructorPromotedProperties::class, $object);
         self::assertSame($expectedFoo, $object->foo);
@@ -100,19 +116,22 @@ final class HydratorTest extends TestCase
     /**
      * @param array<non-empty-string, mixed> $data
      * @param array<non-empty-string, non-empty-string> $types
+     * @param array<non-empty-string, non-empty-string> $mapping
      */
-    #[TestWith([null, null, [], []])]
-    #[TestWith(['Foo', null, ['foo' => 'Foo'], []])]
-    #[TestWith(['Foo', 123, ['foo' => 'Foo', 'bar' => 123], []])]
-    #[TestWith(['Foo', 123, ['foo' => 'Foo', 'bar' => '123'], ['bar' => 'integer']])]
-    #[TestWith(['Foo', 123, ['foo' => 'Foo', 'bar' => '123'], ['foo' => 'text', 'bar' => 'integer']])]
+    #[TestWith([null, null, [], [], []])]
+    #[TestWith(['Foo', null, ['foo' => 'Foo'], [], []])]
+    #[TestWith(['Foo', 123, ['foo' => 'Foo', 'bar' => 123], [], []])]
+    #[TestWith(['Foo', 123, ['foo' => 'Foo', 'bar' => '123'], ['bar' => 'integer'], []])]
+    #[TestWith(['Foo', 123, ['foo' => 'Foo', 'bar' => '123'], ['foo' => 'text', 'bar' => 'integer'], []])]
+    #[TestWith(['Foo', 123, ['foo_column' => 'Foo', 'bar_column' => '123'], ['foo' => 'text', 'bar' => 'integer'], ['foo_column' => 'foo', 'bar_column' => 'bar']])]
     public function testHydrateDtoOnlyProperties(
         ?string $expectedFoo,
         ?int $expectedBar,
         array $data,
         array $types,
+        array $mapping,
     ): void {
-        $object = $this->hydrator->hydrate(DtoOnlyProperties::class, $data, $types);
+        $object = $this->hydrator->hydrate(DtoOnlyProperties::class, $data, $types, $mapping);
 
         self::assertInstanceOf(DtoOnlyProperties::class, $object);
         self::assertSame($expectedFoo, $object->foo);
@@ -121,6 +140,7 @@ final class HydratorTest extends TestCase
 
     /**
      * @param array<non-empty-string, mixed> $data
+     * @param array<non-empty-string, non-empty-string> $mapping
      */
     #[TestWith([
         DtoEnumPropertiesEnum::FOO,
@@ -128,6 +148,7 @@ final class HydratorTest extends TestCase
         DtoEnumPropertiesEnum::BAZ,
         DtoEnumPropertiesEnum::QUX,
         ['constructorArg' => 'foo', 'constructorArgNullable' => 'bar', 'property' => 'baz', 'propertyNullable' => 'qux'],
+        [],
     ])]
     #[TestWith([
         DtoEnumPropertiesEnum::FOO,
@@ -135,6 +156,15 @@ final class HydratorTest extends TestCase
         DtoEnumPropertiesEnum::BAZ,
         null,
         ['constructorArg' => 'foo', 'constructorArgNullable' => null, 'property' => 'baz', 'propertyNullable' => null],
+        [],
+    ])]
+    #[TestWith([
+        DtoEnumPropertiesEnum::FOO,
+        DtoEnumPropertiesEnum::BAR,
+        DtoEnumPropertiesEnum::BAZ,
+        DtoEnumPropertiesEnum::QUX,
+        ['constructor_arg' => 'foo', 'constructor_arg_nullable' => 'bar', 'property' => 'baz', 'property_nullable' => 'qux'],
+        ['constructor_arg' => 'constructorArg', 'constructor_arg_nullable' => 'constructorArgNullable', 'property_nullable' => 'propertyNullable'],
     ])]
     public function testHydrateDtoEnumProperty(
         DtoEnumPropertiesEnum $expectedConstructorArg,
@@ -142,6 +172,7 @@ final class HydratorTest extends TestCase
         DtoEnumPropertiesEnum $expectedProperty,
         ?DtoEnumPropertiesEnum $expectedPropertyNullable,
         array $data,
+        array $mapping,
     ): void {
         $object = $this->hydrator->hydrate(
             DtoEnumProperties::class,
@@ -152,6 +183,7 @@ final class HydratorTest extends TestCase
                 'property' => new EnumType(DtoEnumPropertiesEnum::class, Types::STRING),
                 'propertyNullable' => new EnumType(DtoEnumPropertiesEnum::class, Types::STRING),
             ],
+            $mapping,
         );
 
         self::assertInstanceOf(DtoEnumProperties::class, $object);
