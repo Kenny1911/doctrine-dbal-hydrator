@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Kenny1911\DoctrineDbalHydrator\Tests;
 
-use Doctrine\DBAL\Platforms\SQLitePlatform;
+use Doctrine\DBAL\Platforms\MySQLPlatform;
 use Kenny1911\DoctrineDbalHydrator\Hydrator;
 use Kenny1911\DoctrineDbalHydrator\Mapping\AttributeLoader;
 use Kenny1911\DoctrineDbalHydrator\ObjectHydrator;
@@ -33,7 +33,7 @@ final class HydratorTest extends TestCase
     {
         $hydrator = new Hydrator(
             objectHydrator: new ObjectHydrator(
-                platform: new SQLitePlatform(),
+                platform: new MySQLPlatform(),
                 instantinator: new SimpleInstantinator(),
             ),
             loader: new AttributeLoader(),

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Kenny1911\DoctrineDbalHydrator\Tests;
 
-use Doctrine\DBAL\Platforms\SQLitePlatform;
+use Doctrine\DBAL\Platforms\MySQLPlatform;
 use Doctrine\DBAL\Types\Types;
 use Kenny1911\DoctrineDbalHydrator\HydratorException;
 use Kenny1911\DoctrineDbalHydrator\ObjectHydrator;
@@ -29,7 +29,7 @@ final class ObjectHydratorTest extends TestCase
     #[\Override]
     protected function setUp(): void
     {
-        $this->hydrator = new ObjectHydrator(new SQLitePlatform());
+        $this->hydrator = new ObjectHydrator(new MySQLPlatform());
     }
 
     /**
