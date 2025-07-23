@@ -1,5 +1,7 @@
 {
     "name": "kenny1911/doctrine-dbal-hydrator",
+    "description": "Convert doctrine dbal query result to dto",
+    "keywords": ["doctrine", "dbal", "dto", "object", "hydrator", "convert", "converter", "tool"],
     "type": "library",
     "license": "MIT",
     "minimum-stability": "stable",
