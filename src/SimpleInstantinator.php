@@ -19,7 +19,9 @@ final class SimpleInstantinator implements Instantinator
             $object = $this->newInstance($refClass, $data);
 
             foreach ($data as $key => $value) {
-                $refClass->getProperty($key)->setValue($object, $value);
+                if ($refClass->hasProperty($key)) {
+                    $refClass->getProperty($key)->setValue($object, $value);
+                }
             }
 
             return $object;
