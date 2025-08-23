@@ -42,6 +42,7 @@ final class ObjectHydratorTest extends TestCase
     #[TestWith(['Foo', 123, ['foo' => 'Foo', 'bar' => '123'], ['bar' => 'integer'], []])]
     #[TestWith(['Foo', 123, ['foo' => 'Foo', 'bar' => '123'], ['foo' => 'text', 'bar' => 'integer'], []])]
     #[TestWith(['Foo', 123, ['foo_column' => 'Foo', 'bar_column' => '123'], ['foo' => 'text', 'bar' => 'integer'], ['foo_column' => 'foo', 'bar_column' => 'bar']])]
+    #[TestWith(['Foo', 123, ['foo' => 'Foo', 'bar' => 123, 'baz' => 'Not existing property'], [], []])]
     public function testHydrateDtoConstructor(string $expectedFoo, int $expectedBar, array $data, array $types, array $mapping): void
     {
         $object = $this->hydrator->hydrate(DtoConstructor::class, $data, $types, $mapping);
@@ -65,6 +66,7 @@ final class ObjectHydratorTest extends TestCase
         [],
     ])]
     #[TestWith(['Foo', 0, null, ['foo' => 'Foo'], [], []])]
+    #[TestWith(['Foo', 0, null, ['foo' => 'Foo', 'qux' => 'Not existing property'], [], []])]
     #[TestWith([
         'Foo',
         123,
@@ -99,6 +101,7 @@ final class ObjectHydratorTest extends TestCase
     #[TestWith(['Foo', 123, ['foo' => 'Foo', 'bar' => '123'], ['bar' => 'integer'], []])]
     #[TestWith(['Foo', 123, ['foo' => 'Foo', 'bar' => '123'], ['foo' => 'text', 'bar' => 'integer'], []])]
     #[TestWith(['Foo', 123, ['foo_column' => 'Foo', 'bar_column' => '123'], ['foo' => 'text', 'bar' => 'integer'], ['foo_column' => 'foo', 'bar_column' => 'bar']])]
+    #[TestWith(['Foo', 0, ['foo' => 'Foo', 'qux' => 'Not existing property'], [], []])]
     public function testHydrateDtoConstructorPromotedProperties(
         string $expectedFoo,
         int $expectedBar,
@@ -124,6 +127,7 @@ final class ObjectHydratorTest extends TestCase
     #[TestWith(['Foo', 123, ['foo' => 'Foo', 'bar' => '123'], ['bar' => 'integer'], []])]
     #[TestWith(['Foo', 123, ['foo' => 'Foo', 'bar' => '123'], ['foo' => 'text', 'bar' => 'integer'], []])]
     #[TestWith(['Foo', 123, ['foo_column' => 'Foo', 'bar_column' => '123'], ['foo' => 'text', 'bar' => 'integer'], ['foo_column' => 'foo', 'bar_column' => 'bar']])]
+    #[TestWith([null, null, ['qux' => 'Not existing property'], [], []])]
     public function testHydrateDtoOnlyProperties(
         ?string $expectedFoo,
         ?int $expectedBar,

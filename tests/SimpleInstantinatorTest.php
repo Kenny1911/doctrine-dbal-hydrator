@@ -33,6 +33,7 @@ final class SimpleInstantinatorTest extends TestCase
     #[TestWith(['Foo', 123, ['foo' => 'Foo', 'bar' => 123]])]
     #[TestWith([null, null, []])]
     #[TestWith(['Foo', null, ['foo' => 'Foo']])]
+    #[TestWith(['Foo', 123, ['foo' => 'Foo', 'bar' => 123, 'baz' => 'Not existing property']])]
     public function testDtoOnlyProperties(?string $expectedFoo, ?int $expectedBar, array $data): void
     {
         $object = $this->instantinator->instantiate(DtoOnlyProperties::class, $data);
@@ -47,6 +48,7 @@ final class SimpleInstantinatorTest extends TestCase
      */
     #[TestWith(['Foo', 123, ['foo' => 'Foo', 'bar' => 123]])]
     #[TestWith(['Foo', 0, ['foo' => 'Foo']])]
+    #[TestWith(['Foo', 123, ['foo' => 'Foo', 'bar' => 123, 'baz' => 'Not existing property']])]
     public function testDtoConstructor(string $expectedFoo, int $expectedBar, array $data): void
     {
         $object = $this->instantinator->instantiate(DtoConstructor::class, $data);
@@ -69,6 +71,7 @@ final class SimpleInstantinatorTest extends TestCase
      */
     #[TestWith(['Foo', 123, ['foo' => 'Foo', 'bar' => 123]])]
     #[TestWith(['Foo', 0, ['foo' => 'Foo']])]
+    #[TestWith(['Foo', 123, ['foo' => 'Foo', 'bar' => 123, 'baz' => 'Not existing property']])]
     public function testDtoConstructorPromotedProperties(string $expectedFoo, int $expectedBar, array $data): void
     {
         $object = $this->instantinator->instantiate(DtoConstructorPromotedProperties::class, $data);
@@ -92,6 +95,7 @@ final class SimpleInstantinatorTest extends TestCase
     #[TestWith(['Foo', 123, new \DateTimeImmutable('2025-01-01 00:00:00'), ['foo' => 'Foo', 'bar' => 123, 'baz' => new \DateTimeImmutable('2025-01-01 00:00:00')]])]
     #[TestWith(['Foo', 0, null, ['foo' => 'Foo', 'baz' => null]])]
     #[TestWith(['Foo', 0, null, ['foo' => 'Foo']])]
+    #[TestWith(['Foo', 123, new \DateTimeImmutable('2025-01-01 00:00:00'), ['foo' => 'Foo', 'bar' => 123, 'baz' => new \DateTimeImmutable('2025-01-01 00:00:00'), 'qux' => 'Not existing property']])]
     public function testDtoConstructorAndProperties(
         string $expectedFoo,
         int $expectedBar,
