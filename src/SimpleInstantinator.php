@@ -34,7 +34,7 @@ final class SimpleInstantinator implements Instantinator
      * @template T of object
      *
      * @param \ReflectionClass<T> $refClass
-     * @param array<non-empty-string, mixed> $data
+     * @param array<string, mixed> $data
      *
      * @return T
      *

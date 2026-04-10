@@ -13,7 +13,7 @@ interface Instantinator
      * @template T of object
      *
      * @param class-string<T> $class
-     * @param array<non-empty-string, mixed> $data
+     * @param array<string, mixed> $data
      *
      * @return T
      *
