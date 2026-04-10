@@ -37,9 +37,9 @@ final class ObjectHydrator
      * @template T of object
      *
      * @param class-string<T> $class
-     * @param array<non-empty-string, mixed> $data
-     * @param array<non-empty-string, non-empty-string|EnumType> $types Map keys of $class property to doctrine type
-     * @param array<non-empty-string, non-empty-string> $mapping Map keys of $data to properties of $class
+     * @param array<string, mixed> $data
+     * @param array<string, non-empty-string|EnumType> $types Map keys of $class property to doctrine type
+     * @param array<string, string> $mapping Map keys of $data to properties of $class
      *
      * @return T
      *
